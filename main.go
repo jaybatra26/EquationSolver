@@ -18,6 +18,9 @@ type result struct{
 	x float64
 	y float64
 }
+func NewCoeff(a,b,c float64) *coefficiant{
+	return &coefficiant{a:a,b:b,c:c}
+}
 func EmptyNewCoeff() *coefficiant{
 	return &coefficiant{}
 }
@@ -43,20 +46,16 @@ func solver(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
 		}
 }
-// func (coeff *coefficiant)ReturnCoefftruct() *coefficiant{
-// 	return &coeff
-// }
+
 func (coeff *coefficiant)ValidateEquation(eq_ string){
 
 		res, err := regexp.MatchString("\\d+x[+-]?\\d+y\\=\\d+", eq_)
 		if res{
 
 			coeff_num := coeff.ExtractCoeffFromString(eq_)
-			fmt.Println(coeff_num)
 			coeff.a =  coeff_num[0]
 			coeff.b =  coeff_num[1]
 			coeff.c = coeff_num[2]
-			fmt.Println(coeff)
 			return
 		}
 		res, err = regexp.MatchString("x\\+y\\=\\d+", eq_)
@@ -113,18 +112,16 @@ func (coeff *coefficiant)ValidateEquation(eq_ string){
 			coeff.c = coeff_num[0]
 			return
 		}
-		fmt.Println(err)
+		if err!=nil{
+			log.Fatal("Wrong format of equation")
+		}
 		return 
 }
 
 func(coeff *coefficiant) ExtractCoeffFromString(eq_ string) []float64{
-	//check length error
-	//read about slice length and capacity 
-	// read about how rabbit mq could be used and how channels are to be used
 
 	re := regexp.MustCompile("[-]?[0-9]+")
 	coeff_arr := re.FindAllString(eq_, -1)
-	// coeff_num := ConvertToFloat(coefficiants_)
 	var num_arr []float64
 
 	for _, coeff_ := range coeff_arr{
@@ -132,7 +129,6 @@ func(coeff *coefficiant) ExtractCoeffFromString(eq_ string) []float64{
 			num_arr = append(num_arr, num_)
 		}
 	}
-	//check if length of num arr is 0
 	return num_arr
 }
 
@@ -156,7 +152,6 @@ func FindDeterminents(first_equation, second_equation string) *result{
 
 }
 func main() {
-	// result:= FindDeterminents("x+y=3", "x-y=5")
 	http.HandleFunc("/equate", solver)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 	
